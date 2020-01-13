@@ -1,11 +1,16 @@
 import datetime
 import hashlib
 
-def salted_hash(password):
-  password_hash = hashlib.sha256(password.encode())
-  current_time = datetime.datetime.now()
-  salted_password_hash = '%i-%i-%i-%s-%i-%i-%i' % (current_time.year, current_time.month, current_time.day,
-                                                  password_hash.hexdigest(),
-                                                  current_time.hour, current_time.minute, current_time.second)
-  return salted_password_hash
-  #return hashlib.sha256(salted_password_hash.encode()).hexdigest()
+def hash(password):
+  return hashlib.sha256(password.encode())
+  
+def salted_hash(password_hash, deltatime=datetime.timedelta(seconds=0)):
+  time = datetime.datetime.now() - deltatime
+  salted_password_hash = '%i-%i-%i-%s-%i-%i-%i' % (time.year, time.month, time.day,
+                                                   password_hash.hexdigest(),
+                                                   time.hour, time.minute, time.second)
+  return hashlib.sha256(salted_password_hash.encode()).hexdigest()
+
+def accepted_salted_hashes(password_hash):
+  return [salted_hash(password_hash),
+          salted_hash(password_hash, datetime.timedelta(seconds=1))]

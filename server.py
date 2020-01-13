@@ -14,6 +14,10 @@ sock.bind(server_address)
 sock.listen(1)
 sock.settimeout(1.0)
 
+# animation
+animation = "|/-\\"
+i = 0
+
 # Wait for a connection
 print('waiting for connections')
 while True:
@@ -25,14 +29,24 @@ while True:
       # Receive the data in small chunks and retransmit it
       while True:
         data = connection.recv(4)
+
         size = int.from_bytes(data, byteorder="little")
         data = connection.recv(size).decode()
-        password_hash = common.salted_hash("1234")
-        if data == password_hash:
+        if data == "":
+          sys.stdout.write("\rClient Gone\n")
+          break
+        
+        password_hashes = common.accepted_salted_hashes(common.hash("1234"))
+          
+        if data in password_hashes:
           connection.sendall("T".encode())
+          # animation
+          sys.stdout.write("\r" + animation[i % len(animation)])
+          sys.stdout.flush()
+          i = i + 1
         else:
           print(data)
-          print(password_hash)
+          print(password_hashes)
           connection.sendall("F".encode())
     except ConnectionAbortedError as e:
       pass
